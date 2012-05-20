@@ -166,7 +166,6 @@ package
 		public function stop():void
 		{
 			sound.removeEventListener(SampleDataEvent.SAMPLE_DATA, onSampleData);
-			sound.close();
 		}
 		
 		public function getSynth():SoundSynthModule

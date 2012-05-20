@@ -36,10 +36,7 @@ package
 		private var timer:Number = 0.0;
 		private var totalTime:Number = 0.0;
 		private var gain:Number = 0.2;
-		
-		
-
-		
+		private var blend:Number = 0.0;
 		
 		public function SoundSynthModule() 
 		{
@@ -68,6 +65,11 @@ package
 			endCycle = doublePi / (44100.0 / _end);
 			cycle = 0.0;
 			cursor = 0.0;
+		}
+		
+		public function setBlend(_blend:Number):void
+		{
+			blend = _blend;
 		}
 		
 		public function lerp(a:Number, b:Number, t:Number):Number
@@ -195,7 +197,9 @@ package
 			var i:int = 0;
 			for (i = 0; i < outBuffer.length; ++i)
 			{
-				outBuffer[i] += getFilter(synthSquare() * getEnv()) * gain;
+				var squareOut:Number = synthSquare();
+				var pulseOut:Number = synthPulse();
+				outBuffer[i] += getFilter(lerp(squareOut, pulseOut, blend) * getEnv()) * gain;
 				
 				// Advance timer.
 				var doublePi:Number = Math.PI * 2.0;
