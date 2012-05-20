@@ -1,6 +1,8 @@
 package  
 {
 	import flash.geom.Point;
+	import flash.ui.KeyboardType;
+	import flash.utils.Dictionary;
 		
 	import net.flashpunk.World;
 	import net.flashpunk.FP;
@@ -17,12 +19,12 @@ package
 		public var synth:SoundSynth = new SoundSynth();
 		
 		public var deltaTime:Number = 1.0 / 60.0;
-		public var advanceTime:Number = 4.0 * (2048.0 / 44100.0);
+		public var advanceTime:Number = 6.0 * (2048.0 / 44100.0);
 		public var timer:Number = 0.0;
 		public var viewZ:int = 0;
 		public var dirtyRendering:Boolean = true;
 		
-		public var scaleNotes:Array = [ 0, 2, 4, 5, 7, 9, 11, 12 ];
+		public var scaleNotes:Array = [ 0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21, 23, 24 ];
 		
 		public function GameWorld() 
 		{
@@ -59,7 +61,7 @@ package
 			setState(7, 0, 7, true);
 			setState(7, 0, 7, true);
 			*/
-			toggle(0, 0, 0);
+			//toggle(0, 0, 0);
 			
 			synth.addEventListener("PreProcess", onSynthPreProcess);
 			
@@ -97,9 +99,17 @@ package
 
 				var x:int = 0;
 				var y:int = 0;
-
+				
+				var notesOn:Dictionary = new Dictionary;
+				
+				// Gather notes to play.
+				// X = Positioning.
+				// Y = Note (and 3rds + 5ths).
 				for (x = 0; x < 8; ++x)
 				{
+					var y0:int = -1;
+					var y1:int = -1;
+					var noteCount = 0;
 					for (y = 0; y < 8; ++y)
 					{
 						var state:Boolean = getState(x, y, viewZ);
@@ -107,12 +117,30 @@ package
 						
 						if (state)
 						{
-							//
-							var module:SoundSynthModule = synth.getSynth();		
-							module.setEnv(0.01, 0.01, 0.1, 0.1);
-							module.setPitch(SoundSynth.midiNotes[scaleNotes[y]+60],SoundSynth.midiNotes[scaleNotes[y]+60]);
+							noteCount++;
+
+							var note:int = scaleNotes[y + (noteCount * 3)] + 60;
+
+							// Add note to dictionary.
+							notesOn[note] = true;
+						}
+						else
+						{
+							noteCount = 0;
 						}
 					}
+				}
+				
+				//
+				for (var k in notesOn)
+				{
+					var value:Boolean = notesOn[k];
+					var note:int = k;
+					
+					// Play note.
+					var module:SoundSynthModule = synth.getSynth();		
+					module.setEnv(0.01, 0.01, 0.1, 0.1);
+					module.setPitch(SoundSynth.midiNotes[note], SoundSynth.midiNotes[note]);
 				}
 			}
 		}

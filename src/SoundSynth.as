@@ -203,6 +203,8 @@ package
 			}
 			modules = newModules;
 			
+			trace(modules.length);
+			
 			for(i = 0; i < outBuffer.length; i++)
 			{
 				var sample:Number = outBuffer[i];
