@@ -23,6 +23,7 @@ package
 		public var timer:Number = 0.0;
 		public var viewZ:int = 0;
 		public var dirtyRendering:Boolean = true;
+		public var dirtySound:Boolean = true;
 		
 		public var scaleNotes:Array = [ 0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21, 23, 24 ];
 		
@@ -99,11 +100,19 @@ package
 				timer -= advanceTime;
 				viewZ = (viewZ + 1) % 8;
 				dirtyRendering = true;
-
+				dirtySound = true;
+			}
+			
+			if (dirtySound)
+			{
 				var x:int = 0;
 				var y:int = 0;
 				
+				dirtySound = false;
+				
 				var notesOn:Dictionary = new Dictionary;
+				var notesMin:Dictionary = new Dictionary;
+				var notesMax:Dictionary = new Dictionary;
 				
 				// Gather notes to play.
 				for (x = 0; x < 8; ++x)
@@ -121,8 +130,27 @@ package
 						{
 							noteCount++;
 							var note:int = scaleNotes[y + (noteCount * 3)] + 60;
+							
 							notesOn[note] = true;
-						}
+							
+							if (notesMin[note] == null)
+							{
+								notesMin[note] = x;
+							}
+							else
+							{
+								notesMin[note] = Math.min(notesMin[note], x);
+							}
+							
+							if (notesMax[note] == null)
+							{
+								notesMax[note] = x;
+							}
+							else
+							{
+								notesMax[note] = Math.max(notesMax[note], x);
+							}
+}
 						// If not, end the chord.
 						else
 						{
@@ -132,15 +160,39 @@ package
 				}
 				
 				// 
+				var lastNote:int = 0;
 				for (var k in notesOn)
 				{
 					var value:Boolean = notesOn[k];
 					var note:int = k;
 					
+					var min:int = notesMin[k];
+					var max:int = notesMax[k];
+					
+					var lpCoef:Number = 200.0 * max + 50.0;
+					var lpRes:Number = (1.0 * (1.0-min))/9.0;
+					
 					// Play note.
+					if (note - lastNote > 2)
+					{
+						var module:SoundSynthModule = synth.getSynth();		
+						module.setEnv(0.01, 0.02, 0.05, 0.08);
+						module.setGain(0.08);
+						module.setLowPassFilter(1600.0, 0.1);
+						module.setPitch(SoundSynth.midiNotes[note], SoundSynth.midiNotes[note]);
+						lastNote = note;
+					}
+				}
+				
+				if (viewZ % 2 == 0)
+				{
+					/*
 					var module:SoundSynthModule = synth.getSynth();		
-					module.setEnv(0.01, 0.02, 0.05, 0.08);
-					module.setPitch(SoundSynth.midiNotes[note], SoundSynth.midiNotes[note]);
+					module.setEnv(0.01, 0.01, 0.01, 0.1);
+					module.setGain(0.2);
+					module.setLowPassFilter(400.0, 0.4);
+					module.setPitch(80.0, 10.0);
+					*/
 				}
 			}
 		}
