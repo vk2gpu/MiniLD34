@@ -19,7 +19,7 @@ package
 		public var synth:SoundSynth = new SoundSynth();
 		
 		public var deltaTime:Number = 1.0 / 60.0;
-		public var advanceTime:Number = 6.0 * (2048.0 / 44100.0);
+		public var advanceTime:Number = 4.0 * (2048.0 / 44100.0);
 		public var timer:Number = 0.0;
 		public var viewZ:int = 0;
 		public var dirtyRendering:Boolean = true;
@@ -73,11 +73,14 @@ package
 			// Handle input.
 			if (Input.mousePressed)
 			{
-				var x:int = Input.mouseX / 64;
-				var y:int = Input.mouseY / 64;
-				
-				toggle(x, y, viewZ);
-				dirtyRendering = true;
+				if (Input.mouseX < 512 && Input.mouseY < 512)
+				{
+					var x:int = Input.mouseX / 64;
+					var y:int = Input.mouseY / 64;
+			
+					toggle(x, y, viewZ);
+					dirtyRendering = true;
+				}
 			}
 			
 			// Update rendering.
@@ -103,27 +106,24 @@ package
 				var notesOn:Dictionary = new Dictionary;
 				
 				// Gather notes to play.
-				// X = Positioning.
-				// Y = Note (and 3rds + 5ths).
 				for (x = 0; x < 8; ++x)
 				{
 					var y0:int = -1;
 					var y1:int = -1;
-					var noteCount = 0;
+					var noteCount:int = 0;
 					for (y = 0; y < 8; ++y)
 					{
 						var state:Boolean = getState(x, y, viewZ);
 						var button:GameButton = getButton(x, y);
 						
+						// If on begin a chord.
 						if (state)
 						{
 							noteCount++;
-
 							var note:int = scaleNotes[y + (noteCount * 3)] + 60;
-
-							// Add note to dictionary.
 							notesOn[note] = true;
 						}
+						// If not, end the chord.
 						else
 						{
 							noteCount = 0;
@@ -131,7 +131,7 @@ package
 					}
 				}
 				
-				//
+				// 
 				for (var k in notesOn)
 				{
 					var value:Boolean = notesOn[k];
@@ -139,7 +139,7 @@ package
 					
 					// Play note.
 					var module:SoundSynthModule = synth.getSynth();		
-					module.setEnv(0.01, 0.01, 0.1, 0.1);
+					module.setEnv(0.01, 0.02, 0.05, 0.08);
 					module.setPitch(SoundSynth.midiNotes[note], SoundSynth.midiNotes[note]);
 				}
 			}

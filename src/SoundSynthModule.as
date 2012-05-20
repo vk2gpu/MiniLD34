@@ -63,17 +63,22 @@ package
 			return a + ( b - a ) * t;
 		}
 		
-		public function getEnv()
+		public function smoothstep(t:Number):Number
+		{
+			return t * t * (3 - 2 * t);
+		}
+		
+		public function getEnv():Number
 		{
 			var env:Number = 0.0;
 
 			if( cursor < envAEnd )
 			{
-				env = lerp( 0.0, 1.0, ( cursor ) / envA );
+				env = lerp( 0.0, 1.0, smoothstep(( cursor ) / envA) );
 			}
 			else if( cursor < envDEnd )
 			{
-				env = lerp( 1.0, 0.5, ( cursor - envA ) / envD );
+				env = lerp( 1.0, 0.5, smoothstep(( cursor - envAEnd ) / envD) );
 			}
 			else if( cursor < envSEnd )
 			{
@@ -81,7 +86,7 @@ package
 			}
 			else if( cursor < envREnd )
 			{
-				env = lerp( 0.5, 0.0, ( cursor - envS ) / envR );
+				env = lerp( 0.5, 0.0, smoothstep(( cursor - envSEnd ) / envR) );
 			}
 			else
 			{
@@ -120,7 +125,7 @@ package
 			var i:int = 0;
 			for (i = 0; i < outBuffer.length; ++i)
 			{
-				outBuffer[i] += synthPulse() * getEnv() * gain;
+				outBuffer[i] += synthSine() * getEnv() * gain;
 				
 				cursor += 1.0;
 			}
